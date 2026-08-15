@@ -18,6 +18,25 @@
         <Icon v-perm="'email:delete'" class="icon delete" icon="fluent:mail-read-20-regular" width="21" height="21"
               v-if="getSelectedMailsIds().length > 0 && showUnread"
               @click="handleRead"/>
+        <el-dropdown v-if="showTagAction && getSelectedMailsIds().length > 0" @command="handleTagCommand" trigger="click">
+          <Icon class="icon tag-action" icon="fluent:tag-24-regular" width="19" height="19"/>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item v-for="tag in tagList" :key="tag.tagId" :command="tag.tagId">
+                <div class="right-dropdown-item">
+                  <span class="tag-dot" :style="{background: tag.color || '#1890ff'}"></span>
+                  <span>{{ tag.tagName }}</span>
+                </div>
+              </el-dropdown-item>
+              <el-dropdown-item :command="0" divided>
+                <div class="right-dropdown-item">
+                  <Icon icon="fluent:tag-off-24-regular" width="18" height="18"/>
+                  <span>{{ $t('removeTag') }}</span>
+                </div>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
 
       <div class="header-right">
@@ -83,6 +102,9 @@
                     <span class="email-subject" :style="(item.unread === EmailUnreadEnum.UNREAD && showUnread)  ? 'font-weight: bold' : ''">
                       <div class="unread" v-if="!isMobile && (item.unread === EmailUnreadEnum.UNREAD && showUnread) "/>
                       <span v-if="item.code" class="code-tag" @click.stop="copyCode(item.code)">[{{ t('codeLabel') }}{{ item.code }}]</span>
+                      <span class="tag-chip" v-if="getTagName(item.tagId)" :style="'background:' + (getTagColor(item.tagId) || '#1890ff')">
+                        {{ getTagName(item.tagId) }}
+                      </span>
                       <span class="subject-text">
                         <slot name="subject" :email="item" >
                           {{ item.subject || '\u200B' }}
@@ -292,6 +314,22 @@ const props = defineProps({
     default: true
   },
   showUnread: {
+    type: Boolean,
+    default: false
+  },
+  tagList: {
+    type: Array,
+    default: () => []
+  },
+  tagBind: {
+    type: Function,
+    default: null
+  },
+  tagUnbind: {
+    type: Function,
+    default: null
+  },
+  showTagAction: {
     type: Boolean,
     default: false
   }
@@ -706,6 +744,45 @@ function handleDelete() {
         plain: true
       })
       emailStore.deleteIds = emailIds;
+    })
+  })
+}
+
+function getTagName(tagId) {
+  if (!tagId) return '';
+  const row = props.tagList.find(item => item.tagId === tagId);
+  return row ? row.tagName : '';
+}
+
+function getTagColor(tagId) {
+  if (!tagId) return '';
+  const row = props.tagList.find(item => item.tagId === tagId);
+  return row ? row.color : '';
+}
+
+function handleTagCommand(tagId) {
+  const emailIds = getSelectedMailsIds();
+  if (emailIds.length === 0) return;
+
+  tagId = Number(tagId);
+  const req = tagId > 0
+      ? props.tagBind?.(emailIds, tagId)
+      : props.tagUnbind?.(emailIds);
+
+  if (!req) return;
+
+  req.then(() => {
+    emailList.forEach(email => {
+      if (emailIds.includes(email.emailId)) {
+        email.tagId = tagId;
+        email.checked = false;
+      }
+    })
+    updateCheckStatus();
+    ElMessage({
+      message: t('saveSuccessMsg'),
+      type: 'success',
+      plain: true
     })
   })
 }
@@ -1332,6 +1409,32 @@ function loadData() {
 .right-dropdown-item {
   display: flex;
   gap: 10px;
+  align-items: center;
+}
+
+.tag-chip {
+  flex: 0 0 auto;
+  height: 18px;
+  line-height: 18px;
+  font-size: 11px;
+  color: #fff;
+  border-radius: 4px;
+  padding: 0 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 90px;
+}
+
+.tag-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.tag-action {
+  cursor: pointer;
 }
 
 :deep(.el-dropdown-menu__item:last-child) {

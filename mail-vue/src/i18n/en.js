@@ -336,7 +336,18 @@ const en = {
     searchUser: 'Search by user',
     searchEmail: 'Search by Email',
     searchSender: 'Search by Sender',
-    userEmail: 'Email Address'
+    userEmail: 'Email Address',
+    tags: 'Tags',
+    tagAll: 'All Mail',
+    addTag: 'New Tag',
+    editTag: 'Edit Tag',
+    tagNamePlaceholder: 'Enter tag name',
+    tagColor: 'Tag color',
+    tagEmailCount: '{{count}} emails',
+    noTagFound: 'No tags yet',
+    tagNameRequiredMsg: 'Tag name is required',
+    removeTag: 'Remove from tag',
+    delTagConfirm: 'Deleting the tag will move its emails back to uncategorized. Continue?'
 }
 
 export default en

@@ -9,6 +9,10 @@
                :time-sort="params.timeSort"
                :email-read="emailRead"
                :show-unread="true"
+               :tag-list="tagList"
+               :tag-bind="tagBindMails"
+               :tag-unbind="tagUnbindMails"
+               :show-tag-action="true"
                actionLeft="4px"
                @jump="jumpContent"
   >
@@ -29,6 +33,7 @@ import {useSettingStore} from "@/store/setting.js";
 import emailScroll from "@/components/email-scroll/index.vue"
 import {emailList, emailDelete, emailLatest, emailRead} from "@/request/email.js";
 import {starAdd, starCancel} from "@/request/star.js";
+import {tagBind, tagList as fetchTagList, tagUnbind} from "@/request/tag.js";
 import {defineOptions, h, onMounted, reactive, ref, watch} from "vue";
 import {sleep} from "@/utils/time-utils.js";
 import router from "@/router/index.js";
@@ -46,15 +51,28 @@ const settingStore = useSettingStore();
 const scroll = ref({})
 const params = reactive({
   timeSort: 0,
+  tagId: 0,
 })
+const tagList = ref([])
+
+//tagId: -1=全部, 0=未分类(默认), >0=指定标签
+const currentTagId = () => {
+  const tagId = route.query.tagId;
+  return tagId === undefined || tagId === '' ? 0 : Number(tagId);
+}
 
 onMounted(() => {
   emailStore.emailScroll = scroll;
+  params.tagId = currentTagId();
   latest()
 })
 
-
 watch(() => accountStore.currentAccountId, () => {
+  scroll.value.refreshList();
+})
+
+watch(() => route.query.tagId, () => {
+  params.tagId = currentTagId();
   scroll.value.refreshList();
 })
 
@@ -91,15 +109,16 @@ async function latest() {
         const accountId = accountStore.currentAccountId
         const allReceive = scroll.value.latestEmail?.allReceive
         const curTimeSort = params.timeSort
+        const curTagId = params.tagId
         let list = []
 
         //确保发起请求时最后一个邮件是当前账号的,或者
         if (accountId === scroll.value.latestEmail?.reqAccountId) {
-          list = await emailLatest(latestId, accountId, allReceive);
+          list = await emailLatest(latestId, accountId, allReceive, curTagId);
         }
 
         //确保请求回来后，账号没有切换，时间排序没有改变，全部邮件类型没变
-        if (accountId === accountStore.currentAccountId && params.timeSort === curTimeSort && allReceive === accountStore.currentAccount.allReceive) {
+        if (accountId === accountStore.currentAccountId && params.timeSort === curTimeSort && allReceive === accountStore.currentAccount.allReceive && params.tagId === curTagId) {
           if (list.length > 0) {
 
             for (let email of list) {
@@ -141,10 +160,30 @@ function cancelStar(email) {
 function getEmailList(emailId, size) {
   const accountId =  accountStore.currentAccountId;
   const allReceive = accountStore.currentAccount.allReceive;
-  return emailList(accountId, allReceive, emailId, params.timeSort, size, 0).then(data => {
+  return emailList(accountId, allReceive, emailId, params.timeSort, size, 0, params.tagId).then(data => {
     data.latestEmail.reqAccountId = accountId;
     data.latestEmail.allReceive = allReceive;
     return data;
+  })
+}
+
+function onTagChanged() {
+  //批量打标后刷新列表和侧边栏计数
+  fetchTagList().then(data => {
+    tagList.value = data.list;
+  });
+  scroll.value.refreshList();
+}
+
+function tagBindMails(emailIds, tagId) {
+  return tagBind(emailIds, tagId).then(() => {
+    onTagChanged();
+  })
+}
+
+function tagUnbindMails(emailIds) {
+  return tagUnbind(emailIds).then(() => {
+    onTagChanged();
   })
 }
 

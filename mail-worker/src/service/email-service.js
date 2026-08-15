@@ -27,13 +27,17 @@ const emailService = {
 
 	async list(c, params, userId) {
 
-		let { emailId, type, accountId, size, timeSort, allReceive } = params;
+		let { emailId, type, accountId, size, timeSort, allReceive, tagId } = params;
 
 		size = Number(size);
 		emailId = Number(emailId);
 		timeSort = Number(timeSort);
 		accountId = Number(accountId);
 		allReceive = Number(allReceive);
+		tagId = Number(tagId);
+
+		//tagId: -1或空=全部, 0=未分类, >0=指定标签
+		const tagWhere = (!isNaN(tagId) && tagId !== -1) ? eq(email.tagId, tagId) : undefined;
 
 		if (size > 50) {
 			size = 50;
@@ -70,16 +74,17 @@ const emailService = {
 				account,
 				eq(account.accountId, email.accountId)
 			)
-			.where(
-				and(
-					allReceive ? eq(1,1) : eq(email.accountId, accountId),
-					eq(email.userId, userId),
-					timeSort ? gt(email.emailId, emailId) : lt(email.emailId, emailId),
-					eq(email.type, type),
-					eq(email.isDel, isDel.NORMAL),
-					eq(account.isDel, isDel.NORMAL)
-				)
-			);
+		.where(
+			and(
+				allReceive ? eq(1,1) : eq(email.accountId, accountId),
+				eq(email.userId, userId),
+				timeSort ? gt(email.emailId, emailId) : lt(email.emailId, emailId),
+				eq(email.type, type),
+				eq(email.isDel, isDel.NORMAL),
+				eq(account.isDel, isDel.NORMAL),
+				tagWhere
+			)
+		);
 
 		if (timeSort) {
 			query.orderBy(asc(email.emailId));
@@ -94,22 +99,24 @@ const emailService = {
 				account,
 				eq(account.accountId, email.accountId)
 			)
-			.where(
-				and(
-					allReceive ? eq(1,1) : eq(email.accountId, accountId),
-					eq(email.userId, userId),
-					eq(email.type, type),
-					eq(email.isDel, isDel.NORMAL),
-					eq(account.isDel, isDel.NORMAL)
-				)
-		).get();
+		.where(
+			and(
+				allReceive ? eq(1,1) : eq(email.accountId, accountId),
+				eq(email.userId, userId),
+				eq(email.type, type),
+				eq(email.isDel, isDel.NORMAL),
+				eq(account.isDel, isDel.NORMAL),
+				tagWhere
+			)
+	).get();
 
 		const latestEmailQuery = orm(c).select().from(email).where(
 			and(
 				allReceive ? eq(1,1) : eq(email.accountId, accountId),
 				eq(email.userId, userId),
 				eq(email.type, type),
-				eq(email.isDel, isDel.NORMAL)
+				eq(email.isDel, isDel.NORMAL),
+				tagWhere
 			))
 			.orderBy(desc(email.emailId)).limit(1).get();
 
@@ -701,13 +708,17 @@ const emailService = {
 	},
 
 	async latest(c, params, userId) {
-		let { emailId, accountId, allReceive } = params;
+		let { emailId, accountId, allReceive, tagId } = params;
 		allReceive = Number(allReceive);
+		tagId = Number(tagId);
 
 		if (isNaN(allReceive)) {
 			let accountRow = await accountService.selectById(c, accountId);
 			allReceive = accountRow.allReceive;
 		}
+
+		//tagId: -1或空=全部, 0=未分类, >0=指定标签
+		const tagWhere = (!isNaN(tagId) && tagId !== -1) ? eq(email.tagId, tagId) : undefined;
 
 		let list = await orm(c).select({...email}).from(email)
 			.leftJoin(
@@ -721,7 +732,8 @@ const emailService = {
 					eq(email.isDel, isDel.NORMAL),
 					eq(account.isDel, isDel.NORMAL),
 					allReceive ? eq(1,1) : eq(email.accountId, accountId),
-					eq(email.type, emailConst.type.RECEIVE)
+					eq(email.type, emailConst.type.RECEIVE),
+					tagWhere
 				))
 			.orderBy(desc(email.emailId))
 			.limit(20);

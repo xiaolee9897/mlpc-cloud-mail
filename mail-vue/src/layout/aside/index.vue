@@ -26,6 +26,26 @@
           <Icon icon="solar:star-line-duotone" width="20" height="20" />
           <span class="menu-name" style="margin-left: 21px">{{$t('starred')}}</span>
         </el-menu-item>
+        <div class="manage-title tag-title">
+          <div class="tag-title-left">{{$t('tags')}}</div>
+          <Icon icon="fluent:tag-edit-24-regular" width="17" height="17" class="tag-manage-icon"
+                @click.stop="router.push({name: 'tag'})"/>
+        </div>
+        <el-menu-item @click="router.push({name: 'email', query: {tagId: -1}})" index="tag-all"
+                      :class="route.query.tagId === '-1' || route.query.tagId === -1 ? 'choose-item' : ''">
+          <Icon icon="fluent:mail-all-20-regular" width="20" height="20" />
+          <span class="menu-name" style="margin-left: 21px">{{$t('tagAll')}}</span>
+        </el-menu-item>
+        <el-menu-item v-for="tag in tagStore.tags" :key="tag.tagId"
+                      @click="router.push({name: 'email', query: {tagId: tag.tagId}})"
+                      :index="'tag-' + tag.tagId"
+                      :class="String(route.query.tagId) === String(tag.tagId) ? 'choose-item' : ''">
+          <span class="tag-dot" :style="{background: tag.color || '#1890ff'}"></span>
+          <span class="menu-name tag-menu-name">
+            <span class="tag-menu-label">{{tag.tagName}}</span>
+            <span class="tag-menu-count">{{tag.emailCount}}</span>
+          </span>
+        </el-menu-item>
         <el-menu-item @click="router.push({name: 'setting'})" index="setting"
                       :class="route.meta.name === 'setting' ? 'choose-item' : ''">
           <Icon icon="fluent:settings-48-regular" width="20" height="20" />
@@ -74,9 +94,16 @@ import router from "@/router/index.js";
 import { useRoute } from "vue-router";
 import {Icon} from "@iconify/vue";
 import {useSettingStore} from "@/store/setting.js";
+import {useTagStore} from "@/store/tag.js";
+import {onMounted} from "vue";
 
 const settingStore = useSettingStore();
+const tagStore = useTagStore();
 const route = useRoute();
+
+onMounted(() => {
+  tagStore.load();
+})
 
 </script>
 
@@ -125,6 +152,56 @@ const route = useRoute();
   margin-top: 10px;
   padding-left: 20px;
   color: #fff;
+}
+
+.tag-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 20px;
+
+  .tag-title-left {
+    font-size: 13px;
+    opacity: 0.8;
+  }
+
+  .tag-manage-icon {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.tag-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.tag-menu-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+
+  .tag-menu-label {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .tag-menu-count {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-left: 8px;
+  }
 }
 
 .el-menu-item {

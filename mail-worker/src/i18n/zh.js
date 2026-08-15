@@ -66,6 +66,9 @@ const zh = {
 	notAdmin: '输入的邮箱不是管理员邮箱',
 	emailExistDatabase: '有邮箱已存在数据库中',
 	notConfigOss: '对象存储未配置',
+	emptyTagName: '标签名不能为空',
+	tagNameExist: '标签名已存在',
+	tagNotExist: '标签不存在',
 	perms: {
 		"邮件": "邮件",
 		"邮件发送": "邮件发送",

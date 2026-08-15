@@ -336,6 +336,17 @@ const zh = {
     searchUser: '搜索用户',
     searchEmail: '搜索邮箱',
     searchSender: '搜索发件人',
-    userEmail: '用户邮箱'
+    userEmail: '用户邮箱',
+    tags: '标签',
+    tagAll: '全部邮件',
+    addTag: '新建标签',
+    editTag: '编辑标签',
+    tagNamePlaceholder: '请输入标签名',
+    tagColor: '标签颜色',
+    tagEmailCount: '共 {{count}} 封',
+    noTagFound: '暂无标签',
+    tagNameRequiredMsg: '标签名不能为空',
+    removeTag: '移出分类',
+    delTagConfirm: '删除标签后，标签下的邮件将恢复为未分类，确定删除？'
 }
 export default zh

@@ -29,8 +29,38 @@ const dbInit = {
 		await this.v2_8DB(c);
 		await this.v2_9DB(c);
 		await this.v3_0DB(c);
+		await this.v3_1DB(c);
 		await settingService.refresh(c);
 		return c.text('success');
+	},
+
+	async v3_1DB(c) {
+		try {
+			await c.env.db.prepare(`
+				CREATE TABLE IF NOT EXISTS tag (
+					tag_id INTEGER PRIMARY KEY AUTOINCREMENT,
+					user_id INTEGER NOT NULL,
+					tag_name TEXT NOT NULL,
+					color TEXT NOT NULL DEFAULT '',
+					sort INTEGER NOT NULL DEFAULT 0,
+					create_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL
+				)
+			`).run();
+		} catch (e) {
+			console.warn(`跳过建表：${e.message}`);
+		}
+
+		try {
+			await c.env.db.prepare(`ALTER TABLE email ADD COLUMN tag_id INTEGER NOT NULL DEFAULT 0;`).run();
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
+
+		try {
+			await c.env.db.prepare(`CREATE INDEX IF NOT EXISTS idx_email_tag_id ON email(tag_id);`).run();
+		} catch (e) {
+			console.warn(`跳过索引：${e.message}`);
+		}
 	},
 
 	async v3_0DB(c) {
