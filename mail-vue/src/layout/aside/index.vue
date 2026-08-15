@@ -32,7 +32,7 @@
                 @click.stop="router.push({name: 'tag'})"/>
         </div>
         <el-menu-item @click="router.push({name: 'email', query: {tagId: -1}})" index="tag-all"
-                      :class="route.query.tagId === '-1' || route.query.tagId === -1 ? 'choose-item' : ''">
+                      :class="String(route.query.tagId) === '-1' ? 'choose-item' : ''">
           <Icon icon="fluent:mail-all-20-regular" width="20" height="20" />
           <span class="menu-name" style="margin-left: 21px">{{$t('tagAll')}}</span>
         </el-menu-item>
