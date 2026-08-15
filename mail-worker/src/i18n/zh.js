@@ -67,6 +67,7 @@ const zh = {
 	emailExistDatabase: '有邮箱已存在数据库中',
 	notConfigOss: '对象存储未配置',
 	emptyTagName: '标签名不能为空',
+	tagNameTooLong: '标签名不能超过20个字符',
 	tagNameExist: '标签名已存在',
 	tagNotExist: '标签不存在',
 	perms: {

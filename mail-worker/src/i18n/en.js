@@ -67,6 +67,7 @@ const en = {
 	emailExistDatabase: 'Email already exists in the database',
 	notConfigOss: 'Object storage not configured',
 	emptyTagName: 'Tag name is required',
+	tagNameTooLong: 'Tag name must not exceed 20 characters',
 	tagNameExist: 'Tag name already exists',
 	tagNotExist: 'Tag does not exist',
 	perms: {

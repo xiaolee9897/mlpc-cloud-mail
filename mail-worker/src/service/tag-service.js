@@ -15,6 +15,10 @@ const tagService = {
 			throw new BizError(t('emptyTagName'));
 		}
 
+		if (tagName.length > 20) {
+			throw new BizError(t('tagNameTooLong'));
+		}
+
 		const exist = await orm(c).select().from(tag).where(
 			and(
 				eq(tag.userId, userId),
@@ -40,6 +44,10 @@ const tagService = {
 
 		if (!exist) {
 			throw new BizError(t('tagNotExist'));
+		}
+
+		if (tagName && tagName.length > 20) {
+			throw new BizError(t('tagNameTooLong'));
 		}
 
 		if (tagName) {
