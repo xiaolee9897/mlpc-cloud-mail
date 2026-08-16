@@ -8,16 +8,16 @@ enabled = true
 
 [[d1_databases]]
 binding = "db"
-database_name = "cloud-mail"
-database_id = "${D1_DATABASE_ID}"
+database_name = "email-d1"
+database_id = "c9a158c9-22a3-41aa-bbd1-f02e3e3db3b6"
 
 [[kv_namespaces]]
 binding = "kv"
-id = "${KV_NAMESPACE_ID}"
+id = "a7ba9c7ce02d4635a480417652d1d595"
 
 [[r2_buckets]]
 binding = "r2"
-bucket_name = "${R2_BUCKET_NAME}"
+bucket_name = "cloud-mail"
 
 #[[send_email]]
 #name = "email"			#CF发件, 配置后优先使用
