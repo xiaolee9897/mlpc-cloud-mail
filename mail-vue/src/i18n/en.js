@@ -347,7 +347,9 @@ const en = {
     noTagFound: 'No tags yet',
     tagNameRequiredMsg: 'Tag name is required',
     removeTag: 'Remove from tag',
-    delTagConfirm: 'Deleting the tag will move its emails back to uncategorized. Continue?'
+    delTagConfirm: 'Deleting the tag will move its emails back to uncategorized. Continue?',
+    movedToTagMsg: 'Moved to tag: {{name}}',
+    removedTagMsg: 'Removed from tag'
 }
 
 export default en

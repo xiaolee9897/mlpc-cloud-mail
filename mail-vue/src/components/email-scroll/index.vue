@@ -332,6 +332,10 @@ const props = defineProps({
   showTagAction: {
     type: Boolean,
     default: false
+  },
+  tagFilter: {
+    type: Number,
+    default: -1
   }
 })
 
@@ -772,15 +776,28 @@ function handleTagCommand(tagId) {
   if (!req) return;
 
   req.then(() => {
+    // 当前视图过滤值：-1=全部, 0=未分类, >0=指定标签
+    const currentFilter = props.tagFilter;
+
+    // 打标成功后，若邮件不再属于当前过滤视图，直接从列表移除，
+    // 无需用户手动刷新；"全部邮件"视图则保留并更新标签chip
     emailList.forEach(email => {
       if (emailIds.includes(email.emailId)) {
         email.tagId = tagId;
         email.checked = false;
+        if (currentFilter !== -1 && email.tagId !== currentFilter) {
+          const index = emailList.indexOf(email);
+          if (index > -1) {
+            emailList.splice(index, 1);
+            total.value = Math.max(0, total.value - 1);
+          }
+        }
       }
     })
     updateCheckStatus();
+    const tagName = tagId > 0 ? getTagName(tagId) : '';
     ElMessage({
-      message: t('saveSuccessMsg'),
+      message: tagId > 0 ? t('movedToTagMsg', {name: tagName || tagId}) : t('removedTagMsg'),
       type: 'success',
       plain: true
     })

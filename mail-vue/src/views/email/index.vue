@@ -13,6 +13,7 @@
                :tag-bind="tagBindMails"
                :tag-unbind="tagUnbindMails"
                :show-tag-action="true"
+               :tag-filter="params.tagId"
                actionLeft="4px"
                @jump="jumpContent"
   >
@@ -34,6 +35,7 @@ import emailScroll from "@/components/email-scroll/index.vue"
 import {emailList, emailDelete, emailLatest, emailRead} from "@/request/email.js";
 import {starAdd, starCancel} from "@/request/star.js";
 import {tagBind, tagList as fetchTagList, tagUnbind} from "@/request/tag.js";
+import {useTagStore} from "@/store/tag.js";
 import {defineOptions, h, onMounted, reactive, ref, watch} from "vue";
 import {sleep} from "@/utils/time-utils.js";
 import router from "@/router/index.js";
@@ -48,6 +50,7 @@ const route = useRoute();
 const emailStore = useEmailStore();
 const accountStore = useAccountStore();
 const settingStore = useSettingStore();
+const tagStore = useTagStore();
 const scroll = ref({})
 const params = reactive({
   timeSort: 0,
@@ -168,10 +171,12 @@ function getEmailList(emailId, size) {
 }
 
 function onTagChanged() {
-  //批量打标后刷新列表和侧边栏计数
+  //批量打标后刷新列表、标签下拉和侧边栏计数
   fetchTagList().then(data => {
     tagList.value = data.list;
   });
+  //强制刷新 tag store，让侧边栏标签计数实时更新，无需手动刷新页面
+  tagStore.load(true);
   scroll.value.refreshList();
 }
 

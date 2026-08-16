@@ -347,6 +347,8 @@ const zh = {
     noTagFound: '暂无标签',
     tagNameRequiredMsg: '标签名不能为空',
     removeTag: '移出分类',
-    delTagConfirm: '删除标签后，标签下的邮件将恢复为未分类，确定删除？'
+    delTagConfirm: '删除标签后，标签下的邮件将恢复为未分类，确定删除？',
+    movedToTagMsg: '已移至标签：{{name}}',
+    removedTagMsg: '已移出分类'
 }
 export default zh
