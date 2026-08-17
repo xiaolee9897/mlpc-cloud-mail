@@ -9,7 +9,7 @@
                :time-sort="params.timeSort"
                :email-read="emailRead"
                :show-unread="true"
-               :tag-list="tagList"
+               :tag-list="tagStore.tags"
                :tag-bind="tagBindMails"
                :tag-unbind="tagUnbindMails"
                :show-tag-action="true"
@@ -34,7 +34,7 @@ import {useSettingStore} from "@/store/setting.js";
 import emailScroll from "@/components/email-scroll/index.vue"
 import {emailList, emailDelete, emailLatest, emailRead} from "@/request/email.js";
 import {starAdd, starCancel} from "@/request/star.js";
-import {tagBind, tagList as fetchTagList, tagUnbind} from "@/request/tag.js";
+import {tagBind, tagUnbind} from "@/request/tag.js";
 import {useTagStore} from "@/store/tag.js";
 import {defineOptions, h, onMounted, reactive, ref, watch} from "vue";
 import {sleep} from "@/utils/time-utils.js";
@@ -56,7 +56,6 @@ const params = reactive({
   timeSort: 0,
   tagId: 0,
 })
-const tagList = ref([])
 
 //tagId: -1=全部, 0=未分类(默认), >0=指定标签
 const currentTagId = () => {
@@ -67,6 +66,8 @@ const currentTagId = () => {
 onMounted(() => {
   emailStore.emailScroll = scroll;
   params.tagId = currentTagId();
+  //页面加载即拉取标签列表，保证打标下拉有标签可选（无需先移出再添加）
+  tagStore.load();
   latest()
 })
 
@@ -171,11 +172,7 @@ function getEmailList(emailId, size) {
 }
 
 function onTagChanged() {
-  //批量打标后刷新列表、标签下拉和侧边栏计数
-  fetchTagList().then(data => {
-    tagList.value = data.list;
-  });
-  //强制刷新 tag store，让侧边栏标签计数实时更新，无需手动刷新页面
+  //批量打标后刷新 tag store（下拉列表+侧边栏计数实时更新）并刷新邮件列表
   tagStore.load(true);
   scroll.value.refreshList();
 }
