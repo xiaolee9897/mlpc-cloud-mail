@@ -360,6 +360,7 @@ const zh = {
     tagAll: '全部邮件',
     addTag: '新建标签',
     editTag: '编辑标签',
+    renameTag: '重命名',
     tagNamePlaceholder: '请输入标签名',
     tagColor: '标签颜色',
     tagEmailCount: '共 {{count}} 封',

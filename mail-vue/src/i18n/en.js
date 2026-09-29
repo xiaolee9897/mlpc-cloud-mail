@@ -360,6 +360,7 @@ const en = {
     tagAll: 'All Mail',
     addTag: 'New Tag',
     editTag: 'Edit Tag',
+    renameTag: 'Rename',
     tagNamePlaceholder: 'Enter tag name',
     tagColor: 'Tag color',
     tagEmailCount: '{{count}} emails',

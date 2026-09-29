@@ -7,22 +7,21 @@
 
     <el-scrollbar class="scrollbar">
       <div class="tag-box">
-        <div class="tag-item" v-for="item in tagList">
+        <div class="tag-item" v-for="item in tagList" :key="item.tagId">
           <div class="tag-info">
             <span class="tag-dot" :style="{background: item.color || '#1890ff'}"></span>
             <span class="tag-name">{{ item.tagName }}</span>
             <span class="tag-count">{{ $t('tagEmailCount', {count: item.emailCount}) }}</span>
           </div>
           <div class="tag-actions">
-            <el-dropdown class="setting">
-              <Icon icon="fluent:settings-24-filled" width="21" height="21" color="#909399"/>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item @click="openEdit(item)">{{ $t('edit') }}</el-dropdown-item>
-                  <el-dropdown-item @click="deleteTag(item)">{{ $t('delete') }}</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+            <el-tooltip :content="$t('renameTag')" placement="top" :show-after="300">
+              <Icon class="action-icon" icon="fluent:rename-16-regular" width="18" height="18"
+                    @click.stop="openEdit(item)"/>
+            </el-tooltip>
+            <el-tooltip :content="$t('delete')" placement="top" :show-after="300">
+              <Icon class="action-icon danger" icon="fluent:delete-16-regular" width="18" height="18"
+                    @click.stop="deleteTag(item)"/>
+            </el-tooltip>
           </div>
         </div>
       </div>
@@ -74,8 +73,10 @@ onMounted(() => {
 
 function refresh() {
   fetchTagList().then(data => {
-    tagList.value = data.list;
+    tagList.value = data?.list || [];
     tagStore.load(true);
+  }).catch(() => {
+    tagList.value = [];
   })
 }
 
@@ -189,6 +190,30 @@ function deleteTag(item) {
       .tag-count {
         font-size: 12px;
         color: var(--el-text-color-secondary);
+      }
+    }
+
+    .tag-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+
+      .action-icon {
+        cursor: pointer;
+        color: var(--el-text-color-secondary);
+        padding: 4px;
+        border-radius: 4px;
+        transition: color 0.15s ease-in-out, background 0.15s ease-in-out;
+
+        &:hover {
+          color: var(--el-color-primary);
+          background: var(--el-fill-color-light);
+        }
+      }
+
+      .action-icon.danger:hover {
+        color: var(--el-color-danger);
       }
     }
   }
