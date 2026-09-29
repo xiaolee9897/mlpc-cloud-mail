@@ -44,6 +44,12 @@
           <span class="menu-name tag-menu-name">
             <span class="tag-menu-label">{{tag.tagName}}</span>
             <span class="tag-menu-count">{{tag.emailCount}}</span>
+            <span class="tag-menu-actions">
+              <Icon class="tag-menu-icon" icon="fluent:rename-16-regular" width="15" height="15"
+                    @click.stop="rename(tag)"/>
+              <Icon class="tag-menu-icon danger" icon="fluent:delete-16-regular" width="15" height="15"
+                    @click.stop="remove(tag)"/>
+            </span>
           </span>
         </el-menu-item>
         <el-menu-item @click="router.push({name: 'setting'})" index="setting"
@@ -96,14 +102,50 @@ import {Icon} from "@iconify/vue";
 import {useSettingStore} from "@/store/setting.js";
 import {useTagStore} from "@/store/tag.js";
 import {onMounted} from "vue";
+import {ElMessage, ElMessageBox} from "element-plus";
+import {useI18n} from "vue-i18n";
+import {tagDelete, tagUpdate} from "@/request/tag.js";
 
 const settingStore = useSettingStore();
 const tagStore = useTagStore();
 const route = useRoute();
+const {t} = useI18n();
 
 onMounted(() => {
   tagStore.load();
 })
+
+function rename(tag) {
+  ElMessageBox.prompt(t('renameTag'), t('renameTag'), {
+    inputValue: tag.tagName,
+    inputPlaceholder: t('tagNamePlaceholder'),
+    inputValidator: value => !!value && !!value.trim() ? true : t('tagNameRequiredMsg'),
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel')
+  }).then(({value}) => {
+    tagUpdate(tag.tagId, {tagName: value.trim()}).then(() => {
+      ElMessage({message: t('saveSuccessMsg'), type: 'success', plain: true});
+      tagStore.load(true);
+    })
+  }).catch(() => {});
+}
+
+function remove(tag) {
+  ElMessageBox.confirm(t('delTagConfirm'), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel'),
+    type: 'warning'
+  }).then(() => {
+    tagDelete(tag.tagId).then(() => {
+      ElMessage({message: t('delSuccessMsg'), type: 'success', plain: true});
+      // 正在看的就是这个标签时，回到「全部邮件」，避免停留在已失效的过滤条件上
+      if (String(route.query.tagId) === String(tag.tagId)) {
+        router.push({name: 'email', query: {tagId: -1}});
+      }
+      tagStore.load(true);
+    })
+  }).catch(() => {});
+}
 
 </script>
 
@@ -201,6 +243,51 @@ onMounted(() => {
     font-size: 12px;
     opacity: 0.7;
     margin-left: 8px;
+  }
+}
+
+.tag-menu-actions {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.tag-menu-icon {
+  cursor: pointer;
+  opacity: 0.75;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &.danger:hover {
+    color: #f56c6c;
+  }
+}
+
+@media (hover: hover) {
+  .el-menu-item:hover {
+    .tag-menu-count {
+      display: none;
+    }
+
+    .tag-menu-actions {
+      display: inline-flex;
+    }
+  }
+}
+
+@media (hover: none) {
+  .el-menu-item {
+    .tag-menu-count {
+      display: none;
+    }
+
+    .tag-menu-actions {
+      display: inline-flex;
+    }
   }
 }
 
